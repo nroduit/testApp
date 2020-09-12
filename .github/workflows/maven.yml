@@ -50,8 +50,8 @@ jobs:
       env:
         RES: "weasis-distributions/script/resources/${{ matrix.wsystem }}"
       run: |
-        mkdir -p "$GITHUB_WORKSPACE/dist/app"
-        jpackage --type app-image -p "$GITHUB_WORKSPACE" -m app/org.test.TestApp --dest "$GITHUB_WORKSPACE/dist/app" --name "$NAME" --verbose
+        mkdir -p $GITHUB_WORKSPACE/dist/app
+        jpackage --type app-image -p $GITHUB_WORKSPACE -m app/org.test.TestApp --dest $GITHUB_WORKSPACE/dist/app --name "$NAME" --verbose
         echo "$(ls -la ${{ $GITHUB_WORKSPACE/dist/app }})"
 
     - name: Build package with jpackage
