@@ -11,13 +11,10 @@ on:
 jobs:
   build:
     env:
-      JDK_MODULES: "java.base,java.compiler,java.datatransfer,java.desktop,java.logging,java.management,java.prefs,java.xml,jdk.localedata,jdk.charsets,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported,jdk.jdwp.agent"
       NAME: "TestApp"
-      JVM_ARGS: "-splash:$APPDIR/resources/images/about-round.png -Dgosh.port=17179"
-      WEASIS_INPUT: "weasis-distributions/target/portable-dist/weasis-portable"
-      WEASIS_OUTPUT: "weasis-distributions/target/native-dist"
-      WEASIS_INPUT_BIN: "weasis-distributions/target/portable-dist/weasis-portable/weasis"
-      WEASIS_OUTPUT_BIN: "weasis-distributions/target/native-dist/weasis"
+      INPUT: "$GITHUB_WORKSPACE"
+      OUTPUT: "$GITHUB_WORKSPAC/dist"
+      OUTPUT_BIN: "$GITHUB_WORKSPAC/dist/apps"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -50,8 +47,8 @@ jobs:
       env:
         RES: "weasis-distributions/script/resources/${{ matrix.wsystem }}"
       run: |
-        mkdir -p $GITHUB_WORKSPACE/dist/app
-        jpackage --type app-image -p $GITHUB_WORKSPACE -m app/org.test.TestApp --dest $GITHUB_WORKSPACE/dist/app --name "$NAME" --verbose
+        mkdir -p "$OUTPUT_BIN"
+        jpackage --type app-image -p $GITHUB_WORKSPACE -m app/org.test.TestApp --dest "$OUTPUT_BIN" --name "$NAME" --verbose
         echo "$(ls -la ${{ $GITHUB_WORKSPACE/dist/app }})"
 
     - name: Build package with jpackage
@@ -64,18 +61,18 @@ jobs:
         ARC_NAME=${{ matrix.warc }}
         if [ "$machine" = "windows" ] ; then
           [ "$ARC_NAME" = "x86" ] && UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c45673" || UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c1231b"
-          jpackage --type "msi" --app-image "$GITHUB_WORKSPACE/dist/app" --dest "$GITHUB_WORKSPACE/dist" --name "$NAME" \
+          jpackage --type "msi" --app-image "$OUTPUT_BIN" --dest "$OUTPUT" --name "$NAME" \
          --description "Test App" --win-upgrade-uuid "$UPGRADE_UID" --copyright "$COPYRIGHT" --vendor "$VENDOR" --verbose
         elif [ "$machine" = "linux" ] ; then
           declare -a installerTypes=("deb" "rpm")
           for installerType in ${installerTypes[@]}; do
-            jpackage --type "$installerType" --app-image "$GITHUB_WORKSPACE/dist/app" --dest "$GITHUB_WORKSPACE/dist" --name "$NAME" \
+            jpackage --type "$installerType" --app-image "$OUTPUT_BIN" --dest "$OUTPUT" --name "$NAME" \
             --description "Test App" --copyright "$COPYRIGHT" --vendor "$VENDOR" \
             --linux-app-release "1" --linux-package-name "app" --linux-deb-maintainer "unknown" --linux-rpm-license-type "EPL-2.0" \
             --linux-menu-group "Viewer;Graphics;" --linux-app-category "science" --linux-shortcut --verbose
           done
         elif [ "$machine" = "macosx" ] ; then
-          jpackage --type "pkg" --app-image "$GITHUB_WORKSPACE/dist/app" --dest "$GITHUB_WORKSPACE/dist" --name "$NAME" \
+          jpackage --type "pkg" --app-image "$OUTPUT_BIN" --dest "$OUTPUT" --name "$NAME" \
           --copyright "$COPYRIGHT" --mac-package-identifier "$IDENTIFIER" \
           --mac-signing-key-user-name "$CERTIFICATE" --verbose "$MAC_SIGN"
         fi
