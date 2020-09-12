@@ -1,0 +1,81 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Java CI with Maven
+
+on:
+  workflow_dispatch:
+ # push:
+ #   branches: [ master ]
+
+jobs:
+  build:
+    env:
+      JDK_MODULES: "java.base,java.compiler,java.datatransfer,java.desktop,java.logging,java.management,java.prefs,java.xml,jdk.localedata,jdk.charsets,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported,jdk.jdwp.agent"
+      NAME: "TestApp"
+      JVM_ARGS: "-splash:$APPDIR/resources/images/about-round.png -Dgosh.port=17179"
+      WEASIS_INPUT: "weasis-distributions/target/portable-dist/weasis-portable"
+      WEASIS_OUTPUT: "weasis-distributions/target/native-dist"
+      WEASIS_INPUT_BIN: "weasis-distributions/target/portable-dist/weasis-portable/weasis"
+      WEASIS_OUTPUT_BIN: "weasis-distributions/target/native-dist/weasis"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+      #  - { os: ubuntu-latest, name: GNU, cc: gcc, cxx: g++, platform: x32, wsystem: linux, warc: x86 }
+      #  - { os: ubuntu-latest, name: GNU, cc: gcc, cxx: g++, platform: x64, wsystem: linux, warc: x86-64 }
+      #  - { os: macos-latest, name: Clang, cc: clang, cxx: clang++, platform: x64, wsystem: macosx, warc: x86-64 }
+      #  - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x32, wsystem: windows, warc: x86 }
+        - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64 }
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: 16.0.0-ea.14
+    
+    - name: Cache local Maven repository
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+        
+    - name: Build app binary with jpackage
+      shell: bash
+      env:
+        RES: "weasis-distributions/script/resources/${{ matrix.wsystem }}"
+      run: |
+        mkdir -p "$GITHUB_WORKSPACE/dist/app"
+        jpackage --type app-image -p "$GITHUB_WORKSPACE" -m app/org.test.TestApp --dest "$GITHUB_WORKSPACE/dist/app" --name "$NAME" --verbose
+        echo "$(ls -la ${{ $GITHUB_WORKSPACE/dist/app }})"
+
+    - name: Build package with jpackage
+      shell: bash
+      env:
+        VENDOR: "Team"
+        COPYRIGHT: "© 2020 Team"
+      run: |
+        machine=${{ matrix.wsystem }}
+        ARC_NAME=${{ matrix.warc }}
+        if [ "$machine" = "windows" ] ; then
+          [ "$ARC_NAME" = "x86" ] && UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c45673" || UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c1231b"
+          jpackage --type "msi" --app-image "$GITHUB_WORKSPACE/dist/app" --dest "$GITHUB_WORKSPACE/dist" --name "$NAME" \
+         --description "Test App" --win-upgrade-uuid "$UPGRADE_UID" --copyright "$COPYRIGHT" --vendor "$VENDOR" --verbose
+        elif [ "$machine" = "linux" ] ; then
+          declare -a installerTypes=("deb" "rpm")
+          for installerType in ${installerTypes[@]}; do
+            jpackage --type "$installerType" --app-image "$GITHUB_WORKSPACE/dist/app" --dest "$GITHUB_WORKSPACE/dist" --name "$NAME" \
+            --description "Test App" --copyright "$COPYRIGHT" --vendor "$VENDOR" \
+            --linux-app-release "1" --linux-package-name "app" --linux-deb-maintainer "unknown" --linux-rpm-license-type "EPL-2.0" \
+            --linux-menu-group "Viewer;Graphics;" --linux-app-category "science" --linux-shortcut --verbose
+          done
+        elif [ "$machine" = "macosx" ] ; then
+          jpackage --type "pkg" --app-image "$GITHUB_WORKSPACE/dist/app" --dest "$GITHUB_WORKSPACE/dist" --name "$NAME" \
+          --copyright "$COPYRIGHT" --mac-package-identifier "$IDENTIFIER" \
+          --mac-signing-key-user-name "$CERTIFICATE" --verbose "$MAC_SIGN"
+        fi
