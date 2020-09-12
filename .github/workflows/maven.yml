@@ -48,8 +48,8 @@ jobs:
         RES: "weasis-distributions/script/resources/${{ matrix.wsystem }}"
       run: |
         mkdir -p "$OUTPUT_BIN"
-        jpackage --type app-image -p $GITHUB_WORKSPACE -m app/org.test.TestApp --dest "$OUTPUT_BIN" --name "$NAME" --verbose
-        echo "$(ls -la ${{ $GITHUB_WORKSPACE/dist/app }})"
+        jpackage --type app-image -p "$INPUT" -m app/org.test.TestApp --dest "$OUTPUT_BIN" --name "$NAME" --verbose
+        echo "$(ls -la ${{ $OUTPUT_BIN }})"
 
     - name: Build package with jpackage
       shell: bash
