@@ -10,8 +10,8 @@ jobs:
     env:
       NAME: "TestApp"
       INPUT: "$GITHUB_WORKSPACE"
-      OUTPUT: "$GITHUB_WORKSPAC/dist"
-      OUTPUT_BIN: "$GITHUB_WORKSPAC/dist/apps"
+      OUTPUT: "$GITHUB_WORKSPACE/dist"
+      OUTPUT_BIN: "$GITHUB_WORKSPACE/dist/apps"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -28,14 +28,6 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: ${{ matrix.java }}
-    
-    - name: Cache local Maven repository
-      uses: actions/cache@v2
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
 
     - name: Build with Maven
       run: |
