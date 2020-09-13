@@ -27,7 +27,7 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v1
       with:
-        java-version: 16.0.0-ea.14
+        java-version: ${{ matrix.java }}
     
     - name: Cache local Maven repository
       uses: actions/cache@v2
