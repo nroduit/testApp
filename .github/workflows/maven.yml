@@ -17,10 +17,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - { os: ubuntu-latest, name: GNU, cc: gcc, cxx: g++, platform: x32, wsystem: linux, warc: x86, java: 16.0.0-ea.14 }
+      #  - { os: ubuntu-latest, name: GNU, cc: gcc, cxx: g++, platform: x32, wsystem: linux, warc: x86, java: 16.0.0-ea.14 }
         - { os: ubuntu-latest, name: GNU, cc: gcc, cxx: g++, platform: x64, wsystem: linux, warc: x86-64, java: 16.0.0-ea.14 }
-        - { os: macos-latest, name: Clang, cc: clang, cxx: clang++, platform: x64, wsystem: macosx, warc: x86-64, java: 16.0.0-ea.14 }
-        - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x32, wsystem: windows, warc: x86, java: 16.0.0-ea.14 }
+      #  - { os: macos-latest, name: Clang, cc: clang, cxx: clang++, platform: x64, wsystem: macosx, warc: x86-64, java: 16.0.0-ea.14 }
+      #  - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x32, wsystem: windows, warc: x86, java: 16.0.0-ea.14 }
       #  - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64, java: 15.0.0-ea.36 }
         - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64, java: 16.0.0-ea.14 }
     steps:
@@ -52,12 +52,12 @@ jobs:
         ARC_NAME=${{ matrix.warc }}
         if [ "$machine" = "windows" ] ; then
           [ "$ARC_NAME" = "x86" ] && UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c45673" || UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c1231b"
-          jpackage --type "msi" --app-image "${{ env.OUTPUT_BIN }}" --dest "${{ env.OUTPUT }}" --name "$NAME" \
+          jpackage --type "msi" --app-image "${{ env.OUTPUT_BIN }}" --dest "${{ env.OUTPUT }}" \
          --description "Test App" --win-upgrade-uuid "$UPGRADE_UID" --copyright "$COPYRIGHT" --vendor "$VENDOR" --verbose
         elif [ "$machine" = "linux" ] ; then
           declare -a installerTypes=("deb" "rpm")
           for installerType in ${installerTypes[@]}; do
-            jpackage --type "$installerType" --app-image "${{ env.OUTPUT_BIN }}" --dest "${{ env.OUTPUT }}" --name "$NAME" \
+            jpackage --type "$installerType" --app-image "${{ env.OUTPUT_BIN }}" --dest "${{ env.OUTPUT }}" \
             --description "Test App" --copyright "$COPYRIGHT" --vendor "$VENDOR" \
             --linux-app-release "1" --linux-package-name "app" --linux-deb-maintainer "unknown" --linux-rpm-license-type "EPL-2.0" \
             --linux-menu-group "Viewer;Graphics;" --linux-app-category "science" --linux-shortcut --verbose
