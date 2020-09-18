@@ -11,7 +11,6 @@ jobs:
       NAME: "TestApp"
       INPUT: "$GITHUB_WORKSPACE"
       OUTPUT: "$GITHUB_WORKSPACE/dist"
-      OUTPUT_BIN: "$GITHUB_WORKSPACE/dist/apps"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -38,9 +37,9 @@ jobs:
     - name: Build app binary with jpackage
       shell: bash
       run: |
-        mkdir -p "${{ env.OUTPUT_BIN }}"
-        jpackage --type app-image -p "${{ env.INPUT }}" -m app/org.test.TestApp --dest "${{ env.OUTPUT_BIN }}" --name "$NAME" --verbose
-        echo "$(ls -la ${{ env.OUTPUT_BIN }})"
+        mkdir -p "${{ env.OUTPUT }}"
+        jpackage --type app-image -p "${{ env.INPUT }}" -m app/org.test.TestApp --dest "${{ env.OUTPUT }}" --name "$NAME" --verbose
+        echo "$(ls -la ${{ env.OUTPUT }})"
 
     - name: Build package with jpackage
       shell: bash
@@ -52,17 +51,17 @@ jobs:
         ARC_NAME=${{ matrix.warc }}
         if [ "$machine" = "windows" ] ; then
           [ "$ARC_NAME" = "x86" ] && UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c45673" || UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c1231b"
-          jpackage --type "msi" --app-image "${{ env.OUTPUT_BIN }}" --dest "${{ env.OUTPUT }}" \
+          jpackage --type "msi" --app-image "${{ env.OUTPUT }}/$NAME" --dest "${{ env.OUTPUT }}" --name "$NAME" \
          --description "Test App" --win-upgrade-uuid "$UPGRADE_UID" --copyright "$COPYRIGHT" --vendor "$VENDOR" --verbose
         elif [ "$machine" = "linux" ] ; then
           declare -a installerTypes=("deb" "rpm")
           for installerType in ${installerTypes[@]}; do
-            jpackage --type "$installerType" --app-image "${{ env.OUTPUT_BIN }}" --dest "${{ env.OUTPUT }}" \
+            jpackage --type "$installerType" --app-image "${{ env.OUTPUT }}/$NAME" --dest "${{ env.OUTPUT }}" --name "$NAME" \
             --description "Test App" --copyright "$COPYRIGHT" --vendor "$VENDOR" \
-            --linux-app-release "1" --linux-package-name "app" --linux-deb-maintainer "unknown" --linux-rpm-license-type "EPL-2.0" \
+            --linux-app-release "1" --linux-package-name "testapp" --linux-deb-maintainer "unknown" --linux-rpm-license-type "EPL-2.0" \
             --linux-menu-group "Viewer;Graphics;" --linux-app-category "science" --linux-shortcut --verbose
           done
         elif [ "$machine" = "macosx" ] ; then
-          jpackage --type "pkg" --app-image "${{ env.OUTPUT_BIN }}" --dest "${{ env.OUTPUT }}" --name "$NAME" \
+          jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/$NAME" --dest "${{ env.OUTPUT }}" --name "$NAME" \
           --copyright "$COPYRIGHT" --mac-package-identifier "org.test" --verbose
         fi
