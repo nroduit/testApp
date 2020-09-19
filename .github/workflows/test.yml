@@ -12,13 +12,14 @@ jobs:
       shell: bash
       run: |
         sudo dpkg --add-architecture i386
-        sudo apt-get update -y -qq
-        sudo apt-get install -y -qq devscripts gcc-i686-linux-gnu lib32z1 libc6-i386 xdg-utils
-        export LD_LIBRARY_PATH="/usr/lib/i386-linux-gnu"
+        #sudo apt-get update -y -qq
+        #sudo apt-get install -y -qq devscripts gcc-i686-linux-gnu lib32z1 libc6-i386 xdg-utils
+        #export LD_LIBRARY_PATH="/usr/lib/i386-linux-gnu"
         dpkg --print-architecture
-        sudo dpkg --target-arch i386
+        dpkg --version
+        dpkg --target-arch i386
         dpkg --print-architecture
-        sudo dpkg --match-bits 32
+        dpkg --match-bits 32
         dpkg --print-architecture
       
 
