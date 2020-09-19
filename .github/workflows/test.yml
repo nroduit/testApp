@@ -17,6 +17,7 @@ jobs:
         #sudo apt-get install -y -qq devscripts gcc-i686-linux-gnu lib32z1 libc6-i386 xdg-utils
         #export LD_LIBRARY_PATH="/usr/lib/i386-linux-gnu"
         dpkg --print-architecture
+        cat ~/.bashrc
         sudo dpkg-architecture --target-arch i386 
         dpkg --print-architecture
         sudo dpkg-architecture --host-arch i386
