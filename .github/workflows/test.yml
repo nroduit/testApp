@@ -1,4 +1,4 @@
-name: Build native installers
+name: Test
 on:
   workflow_dispatch:
 
