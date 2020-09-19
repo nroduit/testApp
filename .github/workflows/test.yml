@@ -11,7 +11,6 @@ jobs:
     - name: Commands
       shell: bash
       run: |
-        bash -leo pipefail {0}
         dpkg --version
         sudo dpkg --add-architecture i386
         #sudo apt-get update -y -qq
@@ -35,6 +34,7 @@ jobs:
     - name: Commands
       shell: bash
       run: |
+        source ~/.bashrc
         dpkg --print-architecture
         cat ~/.bashrc
       
