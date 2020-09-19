@@ -16,32 +16,30 @@ jobs:
         #sudo apt-get update -y -qq
         #sudo apt-get install -y -qq devscripts gcc-i686-linux-gnu lib32z1 libc6-i386 xdg-utils
         #export LD_LIBRARY_PATH="/usr/lib/i386-linux-gnu"
-        dpkg --print-architecture
-        cat  << 'EOF' >> ~/.bashrc
-        
-        # Override dpkg
-        function dpkg() {
+
+        cat  << 'EOF' > dpkg.bash
+        #!/bin/bash
         if [ "$1" = "--print-architecture" ] ; then
           command echo "i386"
         else
-          command dpkg "$@"
+          command dpkg2 "$@"
         fi
-        }
         EOF
-        source ~/.bashrc
+
+        DPKGDIR=$(dirname -- "$(which dpkg)")
+        dpkg --print-architecture
+        sudo mv ${DPKGDIR}/dpkg ${DPKGDIR}/dpkg2
+        sudo cp dpkg.bash ${DPKGDIR}/dpkg
+        sudo chmod --reference=${DPKGDIR}/dpkg2 ${DPKGDIR}/dpkg
+
+        dpkg --print-architecture
         
-        function dpkg2() {
-        command echo "i386"
-        }
-        dpkg2
+        source ~/.bashrc
         dpkg --print-architecture
         
     - name: test
       run: |
-        source ~/.bashrc
-        dpkg2
         dpkg --print-architecture
-        cat ~/.bashrc
       
 
  
