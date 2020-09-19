@@ -30,6 +30,12 @@ jobs:
         EOF
         source ~/.bashrc
         dpkg --print-architecture
+        
+    - name: Commands
+      shell: bash
+      run: |
+        dpkg --print-architecture
+        cat ~/.bashrc
       
 
 
