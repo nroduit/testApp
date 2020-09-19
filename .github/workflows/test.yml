@@ -18,6 +18,7 @@ jobs:
         #export LD_LIBRARY_PATH="/usr/lib/i386-linux-gnu"
         dpkg --print-architecture
         cat  << 'EOF' >> ~/.bashrc
+        
         # Override dpkg
         function dpkg() {
         if [ "$1" = "--print-architecture" ] ; then
@@ -27,7 +28,7 @@ jobs:
         fi
         }
         EOF
-        cat ~/.bashrc
+        source ~/.bashrc
         dpkg --print-architecture
       
 
