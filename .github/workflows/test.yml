@@ -27,13 +27,12 @@ jobs:
           command dpkg "$@"
         fi
         }
+        EOF
+        source ~/.bashrc
         
         function dpkg2() {
         command echo "i386"
         }
-        
-        EOF
-        source ~/.bashrc
         dpkg2
         dpkg --print-architecture
         
