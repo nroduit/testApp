@@ -31,8 +31,7 @@ jobs:
         source ~/.bashrc
         dpkg --print-architecture
         
-    - name: Commands
-      shell: bash
+    - name: test
       run: |
         source ~/.bashrc
         dpkg --print-architecture
@@ -42,6 +41,7 @@ jobs:
       run: |
         echo $ENV
         echo "export ENV=DEV" > ~/.bashrc
+        source ~/.bashrc
         echo $ENV
     - name: get_env
       run: | 
