@@ -33,10 +33,24 @@ jobs:
         sudo chmod --reference=${DPKGDIR}/dpkg2 ${DPKGDIR}/dpkg
 
         dpkg --print-architecture
-        
-        source ~/.bashrc
-        dpkg --print-architecture
-        
+
+        cat  << 'EOF' > rpmbuild.bash
+        #!/bin/bash
+        if [ "$1" = "--eval=%{_target_cpu}" ] ; then
+          command echo "i386"
+        else
+          command rpmbuild2 "$@"
+        fi
+        EOF
+
+        RPMDIR=$(dirname -- "$(which rpmbuild)")
+        rpmbuild --eval=%{_target_cpu}
+
+        sudo mv ${RPMDIR}/rpmbuild ${RPMDIR}/rpmbuild2
+        sudo cp rpmbuild.bash ${RPMDIR}/rpmbuild
+        sudo chmod --reference=${RPMDIR}/rpmbuild2 ${RPMDIR}/rpmbuild
+        rpmbuild --eval=%{_target_cpu}
+
     - name: test
       run: |
         dpkg --print-architecture
