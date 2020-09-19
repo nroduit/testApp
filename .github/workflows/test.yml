@@ -1,7 +1,4 @@
 name: Test
-defaults:
-  run:
-    shell: bash -ieo pipefail {0}
 on:
   workflow_dispatch:
 
@@ -14,6 +11,7 @@ jobs:
     - name: Commands
       shell: bash
       run: |
+        bash -leo pipefail {0}
         dpkg --version
         sudo dpkg --add-architecture i386
         #sudo apt-get update -y -qq
