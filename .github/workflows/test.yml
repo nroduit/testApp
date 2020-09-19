@@ -38,6 +38,14 @@ jobs:
         dpkg --print-architecture
         cat ~/.bashrc
       
-
+    - name: environment
+      run: |
+        echo $ENV
+        echo "export ENV=DEV" > ~/.bashrc
+        echo $ENV
+    - name: get_env
+      run: | 
+        source ~/.bashrc
+        echo $ENV
 
  
