@@ -27,25 +27,22 @@ jobs:
           command dpkg "$@"
         fi
         }
+        
+        function dpkg2() {
+        command echo "i386"
+        }
+        
         EOF
         source ~/.bashrc
+        dpkg2
         dpkg --print-architecture
         
     - name: test
       run: |
         source ~/.bashrc
+        dpkg2
         dpkg --print-architecture
         cat ~/.bashrc
       
-    - name: environment
-      run: |
-        echo $ENV
-        echo "export ENV=DEV" > ~/.bashrc
-        source ~/.bashrc
-        echo $ENV
-    - name: get_env
-      run: | 
-        source ~/.bashrc
-        echo $ENV
 
  
