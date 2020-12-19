@@ -36,3 +36,4 @@ hs_err*.log
 # Mac temporary folders
 _*/
 
+/app.jar

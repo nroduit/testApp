@@ -17,11 +17,11 @@ jobs:
       matrix:
         include:
       #  - { os: ubuntu-latest, name: GNU, cc: gcc, cxx: g++, platform: x32, wsystem: linux, warc: x86, java: 16.0.0-ea.14 }
-        - { os: ubuntu-latest, name: GNU, cc: gcc, cxx: g++, platform: x64, wsystem: linux, warc: x86-64, java: 16.0.0-ea.14 }
+      #  - { os: ubuntu-latest, name: GNU, cc: gcc, cxx: g++, platform: x64, wsystem: linux, warc: x86-64, java: 16.0.0-ea.14 }
       #  - { os: macos-latest, name: Clang, cc: clang, cxx: clang++, platform: x64, wsystem: macosx, warc: x86-64, java: 16.0.0-ea.14 }
-      #  - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x32, wsystem: windows, warc: x86, java: 16.0.0-ea.14 }
+        - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x32, wsystem: windows, warc: x86, java: 16.0.0-ea.24 }
       #  - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64, java: 15.0.0-ea.36 }
-        - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64, java: 16.0.0-ea.14 }
+        - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64, java: 16.0.0-ea.24 }
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK
@@ -38,7 +38,7 @@ jobs:
       shell: bash
       run: |
         mkdir -p "${{ env.OUTPUT }}"
-        jpackage --type app-image -p "${{ env.INPUT }}" -m app/org.test.TestApp --dest "${{ env.OUTPUT }}" --name "$NAME" --verbose
+        jpackage --type app-image --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" --name "$NAME" --verbose
         echo "$(ls -la ${{ env.OUTPUT }})"
 
     - name: Build package with jpackage
@@ -46,13 +46,16 @@ jobs:
       env:
         VENDOR: "Team"
         COPYRIGHT: "© 2020 Team"
+        VERSION: "1.0.1"
       run: |
+        mkdir -p final-dist
         machine=${{ matrix.wsystem }}
         ARC_NAME=${{ matrix.warc }}
         if [ "$machine" = "windows" ] ; then
-          [ "$ARC_NAME" = "x86" ] && UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c45673" || UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c1231b"
+          [ "$ARC_NAME" = "x86" ] && UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c41673" || UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c07c1231b"
           jpackage --type "msi" --app-image "${{ env.OUTPUT }}/$NAME" --dest "${{ env.OUTPUT }}" --name "$NAME" \
-         --description "Test App" --win-upgrade-uuid "$UPGRADE_UID" --copyright "$COPYRIGHT" --vendor "$VENDOR" --verbose
+          --description "Test App" --win-upgrade-uuid "$UPGRADE_UID" --copyright "$COPYRIGHT" --vendor "$VENDOR" --verbose
+          cp ${{ env.OUTPUT }}/*.msi final-dist/${NAME}-${{ env.VERSION }}-${ARC_NAME}.msi
         elif [ "$machine" = "linux" ] ; then
           declare -a installerTypes=("deb" "rpm")
           for installerType in ${installerTypes[@]}; do
@@ -60,8 +63,17 @@ jobs:
             --description "Test App" --copyright "$COPYRIGHT" --vendor "$VENDOR" \
             --linux-app-release "1" --linux-package-name "testapp" --linux-deb-maintainer "unknown" --linux-rpm-license-type "EPL-2.0" \
             --linux-menu-group "Viewer;Graphics;" --linux-app-category "science" --linux-shortcut --verbose
+            cp ${{ env.OUTPUT }}/*.${installerType} final-dist
           done
         elif [ "$machine" = "macosx" ] ; then
           jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/$NAME" --dest "${{ env.OUTPUT }}" --name "$NAME" \
           --copyright "$COPYRIGHT" --mac-package-identifier "org.test" --verbose
+          cp ${{ env.OUTPUT }}/*.pkg final-dist
         fi
+        echo "APP_ARTIFACT=weassis-${machine}-${ARC_NAME}-${{ env.VERSION }}" >> $GITHUB_ENV
+
+    - name: Upload the final opencv binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.APP_ARTIFACT }}
+        path: final-dist
