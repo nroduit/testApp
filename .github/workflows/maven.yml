@@ -38,8 +38,17 @@ jobs:
       shell: bash
       run: |
         mkdir -p "${{ env.OUTPUT }}"
-        jpackage --type app-image --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" --name "$NAME" --verbose
-        echo "$(ls -la ${{ env.OUTPUT }})"
+        jpackage --type app-image --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
+        --name "$NAME" --java-options "-splash:\$APPDIR\splash.jpg" --verbose
+        machine=${{ matrix.wsystem }}
+        if [ "$machine" = "macosx" ] ; then
+          OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}.app/Contents/app"
+        elif [ "$machine" = "windows" ] ; then
+          OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}/app"
+        else
+          OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}/lib/app"
+        fi
+        cp splash.jpg "${OUT_APP}"
 
     - name: Build package with jpackage
       shell: bash
@@ -70,7 +79,7 @@ jobs:
           --copyright "$COPYRIGHT" --mac-package-identifier "org.test" --verbose
           cp ${{ env.OUTPUT }}/*.pkg final-dist
         fi
-        echo "APP_ARTIFACT=weassis-${machine}-${ARC_NAME}-${{ env.VERSION }}" >> $GITHUB_ENV
+        echo "APP_ARTIFACT=testapp-${machine}-${ARC_NAME}-${{ env.VERSION }}" >> $GITHUB_ENV
 
     - name: Upload the final opencv binary
       uses: actions/upload-artifact@v2
