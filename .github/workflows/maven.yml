@@ -21,13 +21,14 @@ jobs:
       #  - { os: macos-latest, name: Clang, cc: clang, cxx: clang++, platform: x64, wsystem: macosx, warc: x86-64, java: 16.0.0-ea.14 }
         - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x32, wsystem: windows, warc: x86, java: 16.0.0-ea.24 }
       #  - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64, java: 15.0.0-ea.36 }
-        - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64, java: 16.0.0-ea.24 }
+      # - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64, java: 16.0.0-ea.24 }
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK
       uses: actions/setup-java@v1
       with:
         java-version: ${{ matrix.java }}
+        architecture: ${{ matrix.platform }}
 
     - name: Build with Maven
       run: |
