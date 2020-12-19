@@ -10,7 +10,7 @@ jobs:
     env:
       NAME: "TestApp"
       INPUT: "$GITHUB_WORKSPACE"
-      OUTPUT: "$GITHUB_WORKSPACE/dist"
+      OUTPUT: "dist"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
