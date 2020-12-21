@@ -52,15 +52,10 @@ jobs:
         cp splash.jpg "${OUT_APP}"
 
     - name: Codesign executable
-      env:
-        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-      run: |
-        echo ${MACOS_CERTIFICATE} | base64 --decode > certificate.p12
-        security create-keychain -p changeme build.keychain security default-keychain -s build.keychain
-        security unlock-keychain -p changeme build.keychain
-        security import certificate.p12 -k build.keychain -P ${MACOS_CERTIFICATE_PWD} -T /usr/bin/codesign
-        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k changeme build.keychain
+      uses: apple-actions/import-codesign-certs@v1
+      with: 
+        p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
+        p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
 
     - name: Build package with jpackage
       shell: bash
