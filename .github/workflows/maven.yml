@@ -58,10 +58,11 @@ jobs:
         p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
         
     - name: Import Installer Certificate
+      id: cert
       uses: apple-actions/import-codesign-certs@v1
       with: 
         create-keychain: "false"
-        keychain-password: ${{ outputs.keychain-password }}
+        keychain-password: ${{ steps.cert.outputs.keychain-password }}
         p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_INSTALL }}
         p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
 
