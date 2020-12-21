@@ -34,7 +34,22 @@ jobs:
       run: |
         mvn -B package --file pom.xml
         cp target/app.jar "${{ env.INPUT }}"
+
+    - name: Import Developer Certificate
+      uses: apple-actions/import-codesign-certs@v1
+      id: cert
+      with:
+        p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
+        p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
         
+    - name: Import Installer Certificate
+      uses: apple-actions/import-codesign-certs@v1
+      with:
+        create-keychain: "false"
+        keychain-password: ${{ steps.cert.outputs.keychain-password }}
+        p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_INSTALL }}
+        p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+              
     - name: Build app binary with jpackage
       shell: bash
       run: |
@@ -51,27 +66,12 @@ jobs:
         fi
         cp splash.jpg "${OUT_APP}"
 
-    - name: Import Developer Certificate
-      uses: apple-actions/import-codesign-certs@v1
-      id: cert
-      with:
-        p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
-        p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-        
-    - name: Import Installer Certificate
-      uses: apple-actions/import-codesign-certs@v1
-      with:
-        create-keychain: "false"
-        keychain-password: ${{ steps.cert.outputs.keychain-password }}
-        p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_INSTALL }}
-        p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-
     - name: Build package with jpackage
       shell: bash
       env:
         VENDOR: "Team"
         COPYRIGHT: "© 2020 Team"
-        VERSION: "1.0.2"
+        VERSION: "1.0"
         IDENTIFIER: "org.weasis.launcher"
         MACOS_DEV_ID: ${{ secrets.MACOS_DEV_ID }}
       run: |
@@ -97,6 +97,7 @@ jobs:
           --copyright "$COPYRIGHT" --mac-package-identifier "${{ env.IDENTIFIER }}" \
           --mac-signing-keychain "/Users/runner/Library/Keychains/signing_temp.keychain-db" --verbose "--mac-sign"
           cp ${{ env.OUTPUT }}/*.pkg final-dist
+          echo "$(ls -la final-dist)"
           codesign -dv --verbose=4 final-dist/${NAME}-${{ env.VERSION }}.pkg
         fi
         echo "APP_ARTIFACT=testapp-${machine}-${ARC_NAME}-${{ env.VERSION }}" >> $GITHUB_ENV
