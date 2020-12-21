@@ -51,7 +51,7 @@ jobs:
         fi
         cp splash.jpg "${OUT_APP}"
 
-  - name: Codesign executable
+    - name: Codesign executable
       env:
         MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
         MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
