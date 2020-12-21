@@ -18,8 +18,8 @@ jobs:
         include:
       #  - { os: ubuntu-latest, name: GNU, cc: gcc, cxx: g++, platform: x86, wsystem: linux, warc: x86, java: 16.0.0-ea.14 }
       #  - { os: ubuntu-latest, name: GNU, cc: gcc, cxx: g++, platform: x64, wsystem: linux, warc: x86-64, java: 16.0.0-ea.14 }
-      #  - { os: macos-latest, name: Clang, cc: clang, cxx: clang++, platform: x64, wsystem: macosx, warc: x86-64, java: 16.0.0-ea.14 }
-        - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x86, wsystem: windows, warc: x86, java: 14.0.2 }
+        - { os: macos-latest, name: Clang, cc: clang, cxx: clang++, platform: x64, wsystem: macosx, warc: x86-64, java: 17.0.0-ea.2 }
+      #  - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x86, wsystem: windows, warc: x86, java: 14.0.2 }
       #  - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64, java: 15.0.0-ea.36 }
       # - { os: windows-latest, name: VS2019, cc: cl, cxx: cl, platform: x64, wsystem: windows, warc: x86-64, java: 16.0.0-ea.24 }
     steps:
@@ -51,12 +51,25 @@ jobs:
         fi
         cp splash.jpg "${OUT_APP}"
 
+  - name: Codesign executable
+      env:
+        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+      run: |
+        echo ${MACOS_CERTIFICATE} | base64 —decode > certificate.p12
+        security create-keychain -p changeme build.keychain security default-keychain -s build.keychain
+        security unlock-keychain -p changeme build.keychain
+        security import certificate.p12 -k build.keychain -P ${MACOS_CERTIFICATE_PWD} -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k changeme build.keychain
+
     - name: Build package with jpackage
       shell: bash
       env:
         VENDOR: "Team"
         COPYRIGHT: "© 2020 Team"
-        VERSION: "1.0.1"
+        VERSION: "1.0.2"
+        IDENTIFIER: "org.weasis.launcher"
+        MACOS_DEV_ID: ${{ secrets.MACOS_DEV_ID }}
       run: |
         mkdir -p final-dist
         machine=${{ matrix.wsystem }}
@@ -77,8 +90,10 @@ jobs:
           done
         elif [ "$machine" = "macosx" ] ; then
           jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/$NAME" --dest "${{ env.OUTPUT }}" --name "$NAME" \
-          --copyright "$COPYRIGHT" --mac-package-identifier "org.test" --verbose
+          --copyright "$COPYRIGHT" --mac-package-identifier "${{ env.IDENTIFIER }}" \
+          --mac-signing-key-user-name "${MACOS_DEV_ID}" --verbose "--mac-sign"
           cp ${{ env.OUTPUT }}/*.pkg final-dist
+          codesign -dv --verbose=4 final-dist/${NAME}-${{ env.VERSION }}.pkg
         fi
         echo "APP_ARTIFACT=testapp-${machine}-${ARC_NAME}-${{ env.VERSION }}" >> $GITHUB_ENV
 
