@@ -94,7 +94,7 @@ jobs:
           done
         elif [ "$machine" = "macosx" ] ; then
           jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/$NAME.app" --dest "${{ env.OUTPUT }}" --name "$NAME" \
-          --copyright "$COPYRIGHT" --mac-package-identifier "${{ env.IDENTIFIER }}" --mac-signing-keychain \
+          --copyright "$COPYRIGHT" --mac-package-identifier "${{ env.IDENTIFIER }}" \
           --mac-signing-keychain "/Users/runner/Library/Keychains/signing_temp.keychain-db" --verbose "--mac-sign"
           cp ${{ env.OUTPUT }}/*.pkg final-dist
           codesign -dv --verbose=4 final-dist/${NAME}-${{ env.VERSION }}.pkg
