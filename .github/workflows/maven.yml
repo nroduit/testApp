@@ -84,7 +84,7 @@ jobs:
             cp ${{ env.OUTPUT }}/*.${installerType} final-dist
           done
         elif [ "$machine" = "macosx" ] ; then
-          jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/$NAME" --dest "${{ env.OUTPUT }}" --name "$NAME" \
+          jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/$NAME.app" --dest "${{ env.OUTPUT }}" --name "$NAME" \
           --copyright "$COPYRIGHT" --mac-package-identifier "${{ env.IDENTIFIER }}" \
           --mac-signing-key-user-name "${MACOS_DEV_ID}" --verbose "--mac-sign"
           cp ${{ env.OUTPUT }}/*.pkg final-dist
