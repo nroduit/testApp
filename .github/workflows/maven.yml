@@ -58,11 +58,11 @@ jobs:
       run: |
         machine=${{ matrix.wsystem }}
         if [ "$machine" = "macosx" ] ; then
-          declare -a signArgs=("--mac-package-identifier" "${{ env.IDENTIFIER }}" "--mac-signing-keychain" "$HOME/Library/Keychains/${{ env.NAME }}-db")
-          SIGN='--mac-package-identifier "${{ env.IDENTIFIER }}" --mac-signing-keychain "${{ env.KEYPATH }}" --mac-sign'
+          declare -a signArgs=("--mac-package-identifier" "${{ env.IDENTIFIER }}" "--mac-signing-keychain" "$HOME/Library/Keychains/${{ env.NAME }}-db" "--mac-sign")
         else
           declare -a signArgs=("")
         fi
+        echo "${signArgs[@]}"
         mkdir -p "${{ env.OUTPUT }}"
         jpackage --type app-image --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
         --name "${{ env.NAME }}" --java-options "-splash:\$APPDIR\splash.jpg" --verbose "${signArgs[@]}"
