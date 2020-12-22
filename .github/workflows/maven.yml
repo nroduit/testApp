@@ -56,7 +56,7 @@ jobs:
       shell: bash
       run: |
         echo "$(ls -la ~/Library/Keychains/)"
-        echo "$(file "~/Library/Keychains/${{ env.NAME }}-db)"
+        echo "$(file ~/Library/Keychains/${{ env.NAME }}-db)"
         mkdir -p "${{ env.OUTPUT }}"
         jpackage --type app-image --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
         --name "$NAME" --java-options "-splash:\$APPDIR\splash.jpg" --mac-package-identifier "${{ env.IDENTIFIER }}" \
