@@ -55,11 +55,12 @@ jobs:
               
     - name: Build app binary with jpackage
       shell: bash
+      env:
+        KEYPATH: "$HOME/Library/Keychains/${{ env.NAME }}-db"
       run: |
         machine=${{ matrix.wsystem }}
         if [ "$machine" = "macosx" ] ; then
-          KEYPATH="$HOME/Library/Keychains/${{ env.NAME }}-db"
-          SIGN='--mac-package-identifier "${{ env.IDENTIFIER }}" --mac-signing-keychain "${KEYPATH}" --mac-sign'
+          SIGN='--mac-package-identifier "${{ env.IDENTIFIER }}" --mac-signing-keychain "${{ env.KEYPATH }}" --mac-sign'
         else
           SIGN=""
         fi
