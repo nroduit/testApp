@@ -56,7 +56,7 @@ jobs:
     - name: Build app binary with jpackage
       shell: bash
       env:
-        KEYPATH: "$HOME/Library/Keychains/${{ env.NAME }}-db"
+        KEYPATH: "/Users/runner/Library/Keychains/${{ env.NAME }}-db"
       run: |
         machine=${{ matrix.wsystem }}
         if [ "$machine" = "macosx" ] ; then
