@@ -9,6 +9,7 @@ jobs:
   build:
     env:
       NAME: "TestApp"
+      IDENTIFIER: "org.weasis.launcher"
       INPUT: "$GITHUB_WORKSPACE"
       OUTPUT: "dist"
     runs-on: ${{ matrix.os }}
@@ -57,7 +58,8 @@ jobs:
       run: |
         machine=${{ matrix.wsystem }}
         if [ "$machine" = "macosx" ] ; then
-          SIGN='--mac-package-identifier "${{ env.IDENTIFIER }}" --mac-signing-keychain "$HOME/Library/Keychains/${{ env.NAME }}-db" --mac-sign'
+          KEYPATH="$HOME/Library/Keychains/${{ env.NAME }}-db"
+          SIGN='--mac-package-identifier "${{ env.IDENTIFIER }}" --mac-signing-keychain "${KEYPATH}" --mac-sign'
         else
           SIGN=""
         fi
@@ -92,7 +94,6 @@ jobs:
         VENDOR: "Team"
         COPYRIGHT: "© 2020 Team"
         VERSION: "1.0"
-        IDENTIFIER: "org.weasis.launcher"
       run: |
         mkdir -p final-dist
         machine=${{ matrix.wsystem }}
