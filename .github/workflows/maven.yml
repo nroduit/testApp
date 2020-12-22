@@ -36,29 +36,27 @@ jobs:
         mvn -B package --file pom.xml
         cp target/app.jar "${{ env.INPUT }}"
 
-    - name: "Import Certificate: Development"
-      uses: devbotsxyz/import-signing-certificate@main
-      id: certificate
+    - name: Import Developer Certificate
+      uses: apple-actions/import-codesign-certs@v1
+      id: cert
       with:
-        keychain-name: ${{ env.NAME }}
-        certificate-data: ${{ secrets.MACOS_CERTIFICATE_DEVELOPMENT }}
-        certificate-passphrase: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-        keychain-password: ${{ secrets.MACOS_KEYCHAIN_PWD }}
-
-    - name: "Import Certificate: Installer"
-      uses: devbotsxyz/import-signing-certificate@main
+        p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_DEVELOPMENT }}
+        p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        
+    - name: Import Installer Certificate
+      uses: apple-actions/import-codesign-certs@v1
       with:
-        keychain-name: ${{ env.NAME }}
-        certificate-data: ${{ secrets.MACOS_CERTIFICATE_INSTALLER }}
-        certificate-passphrase: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-        keychain-password: ${{ secrets.MACOS_KEYCHAIN_PWD }}
+        create-keychain: "false"
+        keychain-password: ${{ steps.cert.outputs.keychain-password }}
+        p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_INSTALLER }}
+        p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
               
     - name: Build app binary with jpackage
       shell: bash
       run: |
         machine=${{ matrix.wsystem }}
         if [ "$machine" = "macosx" ] ; then
-          declare -a signArgs=("--mac-package-identifier" "${{ env.IDENTIFIER }}" "--mac-signing-keychain" "$HOME/Library/Keychains/${{ env.NAME }}-db" "--mac-sign")
+          declare -a signArgs=("--mac-package-identifier" "${{ env.IDENTIFIER }}" "--mac-signing-keychain" "$HOME/Library/Keychains/signing_temp.keychain-db" "--mac-sign")
         else
           declare -a signArgs=("")
         fi
@@ -103,7 +101,7 @@ jobs:
         elif [ "$machine" = "macosx" ] ; then
           jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/${{ env.NAME }}.app" --dest "${{ env.OUTPUT }}" --name "${{ env.NAME }}" \
           --copyright "$COPYRIGHT" --mac-package-identifier "${{ env.IDENTIFIER }}" \
-          --mac-signing-keychain "$HOME/Library/Keychains/${{ env.NAME }}-db" --mac-sign --verbose 
+          --mac-signing-keychain "$HOME/Library/Keychains/signing_temp.keychain-db" --mac-sign --verbose 
           cp ${{ env.OUTPUT }}/*.pkg final-dist
           echo "$(ls -la final-dist)"
           #codesign -dv --verbose=4 final-dist/${{ env.NAME }}-${{ env.VERSION }}.pkg
