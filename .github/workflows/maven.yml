@@ -63,7 +63,7 @@ jobs:
         echo "${signArgs[@]}"
         mkdir -p "${{ env.OUTPUT }}"
         jpackage --type app-image --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
-        --name "${{ env.NAME }}" --java-options "-splash:\$APPDIR\splash.jpg" --verbose "${signArgs[@]}"
+        --name "${{ env.NAME }}" --resource-dir "resources" --java-options "-splash:\$APPDIR\splash.jpg" --verbose "${signArgs[@]}"
         
         if [ "$machine" = "macosx" ] ; then
           OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}.app/Contents/app"
