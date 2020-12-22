@@ -76,18 +76,6 @@ jobs:
         fi
         cp splash.jpg "${OUT_APP}"
 
-    - name: Notarize Build
-      uses: devbotsxyz/xcode-notarize@v1
-      with:
-        product-path: "${{ env.OUTPUT }}/${{ env.NAME }}.app"
-        appstore-connect-username: ${{ secrets.MACOS_NOTARIZATION_USER}}
-        appstore-connect-password: ${{ secrets.MACOS_NOTARIZATION_PWD }}
-
-    - name: Staple Build
-      uses: devbotsxyz/xcode-staple@v1
-      with:
-        product-path: "${{ env.OUTPUT }}/${{ env.NAME }}.app"
-
     - name: Build package with jpackage
       shell: bash
       env:
