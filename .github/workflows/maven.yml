@@ -32,8 +32,6 @@ jobs:
 
     - name: Build with Maven
       run: |
-        echo $HOME
-        echo $(readlink -f ~)
         mvn -B package --file pom.xml
         cp target/app.jar "${{ env.INPUT }}"
 
@@ -44,7 +42,7 @@ jobs:
         keychain-name: ${{ env.NAME }}
         certificate-data: ${{ secrets.MACOS_CERTIFICATE_DEVELOPMENT }}
         certificate-passphrase: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-        keychain-password: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+        keychain-password: ${{ secrets.MACOS_KEYCHAIN_PWD }}
 
     - name: "Import Certificate: Installer"
       uses: devbotsxyz/import-signing-certificate@main
@@ -52,7 +50,7 @@ jobs:
         keychain-name: ${{ env.NAME }}
         certificate-data: ${{ secrets.MACOS_CERTIFICATE_INSTALLER }}
         certificate-passphrase: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-        keychain-password: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+        keychain-password: ${{ secrets.MACOS_KEYCHAIN_PWD }}
               
     - name: Build app binary with jpackage
       shell: bash
