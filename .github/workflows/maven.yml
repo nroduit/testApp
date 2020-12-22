@@ -55,11 +55,16 @@ jobs:
     - name: Build app binary with jpackage
       shell: bash
       run: |
+        machine=${{ matrix.wsystem }}
+        if [ "$machine" = "macosx" ] ; then
+          SIGN='--mac-package-identifier "${{ env.IDENTIFIER }}" --mac-signing-keychain "$HOME/Library/Keychains/${{ env.NAME }}-db" --mac-sign'
+        else
+          OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}/lib/app"
+        fi
         mkdir -p "${{ env.OUTPUT }}"
         jpackage --type app-image --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
-        --name "$NAME" --java-options "-splash:\$APPDIR\splash.jpg" --mac-package-identifier "${{ env.IDENTIFIER }}" \
-        --mac-signing-keychain "$HOME/Library/Keychains/${{ env.NAME }}-db" --verbose "--mac-sign"
-        machine=${{ matrix.wsystem }}
+        --name "$NAME" --java-options "-splash:\$APPDIR\splash.jpg" --verbose
+        
         if [ "$machine" = "macosx" ] ; then
           OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}.app/Contents/app"
         elif [ "$machine" = "windows" ] ; then
