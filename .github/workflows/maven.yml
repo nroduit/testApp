@@ -55,12 +55,10 @@ jobs:
     - name: Build app binary with jpackage
       shell: bash
       run: |
-        echo "$(ls -la ~/Library/Keychains/)"
-        echo "$(file ~/Library/Keychains/${{ env.NAME }}-db)"
         mkdir -p "${{ env.OUTPUT }}"
         jpackage --type app-image --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
         --name "$NAME" --java-options "-splash:\$APPDIR\splash.jpg" --mac-package-identifier "${{ env.IDENTIFIER }}" \
-        --mac-signing-keychain "/Users/runner/Library/Keychains/${{ env.NAME }}-db" --verbose "--mac-sign"
+        --mac-signing-keychain "{{ env.HOME }}/Library/Keychains/${{ env.NAME }}-db" --verbose "--mac-sign"
         machine=${{ matrix.wsystem }}
         if [ "$machine" = "macosx" ] ; then
           OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}.app/Contents/app"
@@ -100,7 +98,7 @@ jobs:
         elif [ "$machine" = "macosx" ] ; then
           jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/$NAME.app" --dest "${{ env.OUTPUT }}" --name "$NAME" \
           --copyright "$COPYRIGHT" --mac-package-identifier "${{ env.IDENTIFIER }}" \
-          --mac-signing-keychain "~/Library/Keychains/${{ env.NAME }}-db" --verbose "--mac-sign"
+          --mac-signing-keychain "{{ env.HOME }}/Library/Keychains/${{ env.NAME }}-db" --verbose "--mac-sign"
           cp ${{ env.OUTPUT }}/*.pkg final-dist
           echo "$(ls -la final-dist)"
           #codesign -dv --verbose=4 final-dist/${NAME}-${{ env.VERSION }}.pkg
