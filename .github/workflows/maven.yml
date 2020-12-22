@@ -59,11 +59,11 @@ jobs:
         if [ "$machine" = "macosx" ] ; then
           SIGN='--mac-package-identifier "${{ env.IDENTIFIER }}" --mac-signing-keychain "$HOME/Library/Keychains/${{ env.NAME }}-db" --mac-sign'
         else
-          OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}/lib/app"
+          SIGN=""
         fi
         mkdir -p "${{ env.OUTPUT }}"
         jpackage --type app-image --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
-        --name "$NAME" --java-options "-splash:\$APPDIR\splash.jpg" --verbose
+        --name "${{ env.NAME }}" --java-options "-splash:\$APPDIR\splash.jpg" --verbose ${SIGN}
         
         if [ "$machine" = "macosx" ] ; then
           OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}.app/Contents/app"
@@ -73,6 +73,18 @@ jobs:
           OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}/lib/app"
         fi
         cp splash.jpg "${OUT_APP}"
+
+    - name: Notarize Build
+      uses: devbotsxyz/xcode-notarize@v1
+      with:
+        product-path: "${{ env.OUTPUT }}/${{ env.NAME }}.app"
+        appstore-connect-username: ${{ secrets.MACOS_NOTARIZATION_USER}}
+        appstore-connect-password: ${{ secrets.MACOS_NOTARIZATION_PWD }}
+
+    - name: Staple Build
+      uses: devbotsxyz/xcode-staple@v1
+      with:
+        product-path: "${{ env.OUTPUT }}/${{ env.NAME }}.app"
 
     - name: Build package with jpackage
       shell: bash
@@ -87,25 +99,25 @@ jobs:
         ARC_NAME=${{ matrix.warc }}
         if [ "$machine" = "windows" ] ; then
           [ "$ARC_NAME" = "x86" ] && UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c41673" || UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c07c1231b"
-          jpackage --type "msi" --app-image "${{ env.OUTPUT }}/$NAME" --dest "${{ env.OUTPUT }}" --name "$NAME" \
+          jpackage --type "msi" --app-image "${{ env.OUTPUT }}/${{ env.NAME }}" --dest "${{ env.OUTPUT }}" --name "${{ env.NAME }}" \
           --description "Test App" --win-upgrade-uuid "$UPGRADE_UID" --copyright "$COPYRIGHT" --vendor "$VENDOR" --verbose
           cp ${{ env.OUTPUT }}/*.msi final-dist/${NAME}-${{ env.VERSION }}-${ARC_NAME}.msi
         elif [ "$machine" = "linux" ] ; then
           declare -a installerTypes=("deb" "rpm")
           for installerType in ${installerTypes[@]}; do
-            jpackage --type "$installerType" --app-image "${{ env.OUTPUT }}/$NAME" --dest "${{ env.OUTPUT }}" --name "$NAME" \
+            jpackage --type "$installerType" --app-image "${{ env.OUTPUT }}/${{ env.NAME }}" --dest "${{ env.OUTPUT }}" --name "${{ env.NAME }}" \
             --description "Test App" --copyright "$COPYRIGHT" --vendor "$VENDOR" \
             --linux-app-release "1" --linux-package-name "testapp" --linux-deb-maintainer "unknown" --linux-rpm-license-type "EPL-2.0" \
             --linux-menu-group "Viewer;Graphics;" --linux-app-category "science" --linux-shortcut --verbose
             cp ${{ env.OUTPUT }}/*.${installerType} final-dist
           done
         elif [ "$machine" = "macosx" ] ; then
-          jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/$NAME.app" --dest "${{ env.OUTPUT }}" --name "$NAME" \
+          jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/${{ env.NAME }}.app" --dest "${{ env.OUTPUT }}" --name "${{ env.NAME }}" \
           --copyright "$COPYRIGHT" --mac-package-identifier "${{ env.IDENTIFIER }}" \
-          --mac-signing-keychain "$HOME/Library/Keychains/${{ env.NAME }}-db" --verbose "--mac-sign"
+          --mac-signing-keychain "$HOME/Library/Keychains/${{ env.NAME }}-db" --mac-sign --verbose 
           cp ${{ env.OUTPUT }}/*.pkg final-dist
           echo "$(ls -la final-dist)"
-          #codesign -dv --verbose=4 final-dist/${NAME}-${{ env.VERSION }}.pkg
+          #codesign -dv --verbose=4 final-dist/${{ env.NAME }}-${{ env.VERSION }}.pkg
         fi
         echo "APP_ARTIFACT=testapp-${machine}-${ARC_NAME}-${{ env.VERSION }}" >> $GITHUB_ENV
 
