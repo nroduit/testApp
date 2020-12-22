@@ -55,10 +55,11 @@ jobs:
     - name: Build app binary with jpackage
       shell: bash
       run: |
+        echo "$(ls -la ~/Library/Keychains/)"
         mkdir -p "${{ env.OUTPUT }}"
         jpackage --type app-image --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
         --name "$NAME" --java-options "-splash:\$APPDIR\splash.jpg" --mac-package-identifier "${{ env.IDENTIFIER }}" \
-        --mac-signing-keychain "~/Library/Keychains/${{ env.NAME }}-db" --verbose "--mac-sign"
+        --mac-signing-keychain "~/Library/Keychains/${{ env.NAME }}" --verbose "--mac-sign"
         machine=${{ matrix.wsystem }}
         if [ "$machine" = "macosx" ] ; then
           OUT_APP="${{ env.OUTPUT }}/${{ env.NAME }}.app/Contents/app"
