@@ -104,6 +104,18 @@ jobs:
         fi
         echo "APP_ARTIFACT=testapp-${machine}-${ARC_NAME}-${{ env.VERSION }}" >> $GITHUB_ENV
 
+    - name: Notarize Build
+      uses: devbotsxyz/xcode-notarize@v1
+      with:
+        product-path: "final-dist/${{ env.NAME }}-${{ env.VERSION }}.pkg"
+        appstore-connect-username: ${{ secrets.MACOS_NOTARIZATION_USER}}
+        appstore-connect-password: ${{ secrets.MACOS_NOTARIZATION_PWD }}
+
+    - name: Staple Build
+      uses: devbotsxyz/xcode-staple@v1
+      with:
+        product-path: "final-dist/${{ env.NAME }}-${{ env.VERSION }}.pkg"
+
     - name: Upload the final opencv binary
       uses: actions/upload-artifact@v2
       with:
