@@ -36,6 +36,18 @@ jobs:
         mvn -B package --file pom.xml
         cp target/app.jar "${{ env.INPUT }}"
 
+    - name: Retrieve version
+      shell: bash
+      run: |
+        FVERSION=$(awk -F'[<>]' '/<version>/{print $3; exit;}' pom.xml)
+        echo "RAW_VERSION=${FVERSION}" >> $GITHUB_ENV
+
+    - name: Set compatible version
+      shell: bash
+      run: |
+        CVERSION=$(echo $RAW_VERSION | sed -e 's/"//g' -e 's/-.*//')
+        echo "VERSION=${CVERSION}" >> $GITHUB_ENV
+    
     - name: Import Developer Certificate
       uses: apple-actions/import-codesign-certs@v1
       id: cert
@@ -75,7 +87,6 @@ jobs:
       env:
         VENDOR: "Team"
         COPYRIGHT: "© 2020 Team"
-        VERSION: "1.0"
       run: |
         mkdir -p final-dist
         machine=${{ matrix.wsystem }}
