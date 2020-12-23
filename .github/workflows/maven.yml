@@ -84,11 +84,11 @@ jobs:
           declare -a customOptions=("--java-options" "-splash:\$APPDIR/splash.jpg")
           declare -a signArgs=("--mac-package-identifier" "${{ env.IDENTIFIER }}" "--mac-signing-keychain" "$HOME/Library/Keychains/signing_temp.keychain-db" "--mac-sign")
         elif [ "$machine" = "windows" ] ; then
-          declare -a customOptions=("--java-options" "-splash:\$APPDIR/splash.jpg")
-          declare -a signArgs=("")
-        else
           declare -a customOptions=("--java-options" "-splash:\$APPDIR\splash.jpg")
-          declare -a signArgs=("")
+          declare -a signArgs=()
+        else
+          declare -a customOptions=("--java-options" "-splash:\$APPDIR/splash.jpg")
+          declare -a signArgs=()
         fi
         echo "${signArgs[@]}"
         mkdir -p "${{ env.OUTPUT }}"
