@@ -80,7 +80,7 @@ jobs:
         echo "${signArgs[@]}"
         mkdir -p "${{ env.OUTPUT }}"
         jpackage --type app-image --input "files" --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
-        --name "${{ env.NAME }}" --resource-dir "resources" --verbose "${customOptions[@]}" "${signArgs[@]}"
+        --name "${{ env.NAME }}" --app-version "${{ env.VERSION }}" --resource-dir "resources" --verbose "${customOptions[@]}" "${signArgs[@]}"
 
     - name: Build package with jpackage
       shell: bash
@@ -94,20 +94,20 @@ jobs:
         if [ "$machine" = "windows" ] ; then
           [ "$ARC_NAME" = "x86" ] && UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c01c41673" || UPGRADE_UID="3aedc24e-48a8-4623-ab39-0c3c07c1231b"
           jpackage --type "msi" --app-image "${{ env.OUTPUT }}/${{ env.NAME }}" --dest "${{ env.OUTPUT }}" --name "${{ env.NAME }}" \
-          --description "Test App" --win-upgrade-uuid "$UPGRADE_UID" --copyright "$COPYRIGHT" --vendor "$VENDOR" --verbose
+           --app-version "${{ env.VERSION }}" --description "Test App" --win-upgrade-uuid "$UPGRADE_UID" --copyright "$COPYRIGHT" --vendor "$VENDOR" --verbose
           cp ${{ env.OUTPUT }}/*.msi final-dist/${NAME}-${{ env.VERSION }}-${ARC_NAME}.msi
         elif [ "$machine" = "linux" ] ; then
           declare -a installerTypes=("deb" "rpm")
           for installerType in ${installerTypes[@]}; do
             jpackage --type "$installerType" --app-image "${{ env.OUTPUT }}/${{ env.NAME }}" --dest "${{ env.OUTPUT }}" --name "${{ env.NAME }}" \
-            --description "Test App" --copyright "$COPYRIGHT" --vendor "$VENDOR" \
+             --app-version "${{ env.VERSION }}" --description "Test App" --copyright "$COPYRIGHT" --vendor "$VENDOR" \
             --linux-app-release "1" --linux-package-name "testapp" --linux-deb-maintainer "unknown" --linux-rpm-license-type "EPL-2.0" \
             --linux-menu-group "Viewer;Graphics;" --linux-app-category "science" --linux-shortcut --verbose
             cp ${{ env.OUTPUT }}/*.${installerType} final-dist
           done
         elif [ "$machine" = "macosx" ] ; then
           jpackage --type "pkg" --app-image "${{ env.OUTPUT }}/${{ env.NAME }}.app" --dest "${{ env.OUTPUT }}" --name "${{ env.NAME }}" \
-          --resource-dir "resources" --copyright "$COPYRIGHT" --mac-package-identifier "${{ env.IDENTIFIER }}" \
+           --app-version "${{ env.VERSION }}" --resource-dir "resources" --copyright "$COPYRIGHT" --mac-package-identifier "${{ env.IDENTIFIER }}" \
           --mac-signing-keychain "$HOME/Library/Keychains/signing_temp.keychain-db" --mac-sign --verbose 
           cp ${{ env.OUTPUT }}/*.pkg final-dist
           echo "$(ls -la final-dist)"
