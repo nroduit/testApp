@@ -116,16 +116,46 @@ jobs:
         echo "APP_ARTIFACT=testapp-${machine}-${ARC_NAME}-${{ env.VERSION }}" >> $GITHUB_ENV
 
     - name: Notarize Build
-      uses: devbotsxyz/xcode-notarize@v1
-      with:
-        product-path: "final-dist/${{ env.NAME }}-${{ env.VERSION }}.pkg"
-        appstore-connect-username: ${{ secrets.MACOS_NOTARIZATION_USER}}
-        appstore-connect-password: ${{ secrets.MACOS_NOTARIZATION_PWD }}
+      shell: bash
+      run: |
+        BUNDLE_PKG="final-dist/${{ env.NAME }}-${{ env.VERSION }}.pkg"
+        # create temporary files
+        NOTARIZE_APP_LOG=$(mktemp -t notarize-app)
+        NOTARIZE_INFO_LOG=$(mktemp -t notarize-info)
 
-    - name: Staple Build
-      uses: devbotsxyz/xcode-staple@v1
-      with:
-        product-path: "final-dist/${{ env.NAME }}-${{ env.VERSION }}.pkg"
+        # delete temporary files on exit
+        function finish {
+          rm "$NOTARIZE_APP_LOG" "$NOTARIZE_INFO_LOG"
+        }
+        trap finish EXIT
+
+
+        # submit app for notarization
+        if xcrun altool --notarize-app --primary-bundle-id "org.test.${{ env.NAME }}" --username "${{ secrets.MACOS_NOTARIZATION_USER}}" --password "${{ secrets.MACOS_NOTARIZATION_PWD }}" -f "$BUNDLE_PKG" > "$NOTARIZE_APP_LOG" 2>&1; then
+          cat "$NOTARIZE_APP_LOG"
+          RequestUUID=$(awk -F ' = ' '/RequestUUID/ {print $2}' "$NOTARIZE_APP_LOG")
+
+          # check status periodically
+          while sleep 60 && date; do
+            # check notarization status
+            if xcrun altool --notarization-info "$RequestUUID" --username "${{ secrets.MACOS_NOTARIZATION_USER}}" --password "${{ secrets.MACOS_NOTARIZATION_PWD }}" > "$NOTARIZE_INFO_LOG" 2>&1; then
+              cat "$NOTARIZE_INFO_LOG"
+
+              # once notarization is complete, run stapler and exit
+              if ! grep -q "Status: in progress" "$NOTARIZE_INFO_LOG"; then
+                xcrun stapler staple "$BUNDLE_PKG"
+                exit $?
+              fi
+            else
+              cat "$NOTARIZE_INFO_LOG" 1>&2
+              exit 1
+            fi
+          done
+        else
+          cat "$NOTARIZE_APP_LOG" 1>&2
+          exit 1
+        fi
+
 
     - name: Upload the final opencv binary
       uses: actions/upload-artifact@v2
