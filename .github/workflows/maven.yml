@@ -51,6 +51,7 @@ jobs:
         mvn --version
         mvn -B package --file pom.xml
         cp target/app.jar "${{ env.INPUT }}"
+        cp target/app.jar "files"
 
     - name: Retrieve version
       shell: bash
