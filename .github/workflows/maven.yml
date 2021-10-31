@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     env:
+      JDK_MODULES: "java.base,java.compiler,java.datatransfer,java.desktop,java.logging,java.management,java.prefs,java.xml,jdk.localedata,jdk.charsets,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported,jdk.jdwp.agent"
       NAME: "TestApp"
       IDENTIFIER: "org.weasis.launcher"
       INPUT: "$GITHUB_WORKSPACE"
@@ -96,7 +97,12 @@ jobs:
         fi
         echo "${signArgs[@]}"
         mkdir -p "${{ env.OUTPUT }}"
-        jpackage --type app-image --input "files" --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
+        
+        #jpackage --type app-image --input "files" --module-path "${{ env.INPUT }}" --module app/org.test.TestApp --dest "${{ env.OUTPUT }}" \
+        #--name "${{ env.NAME }}" --app-version "${{ env.VERSION }}" --resource-dir "resources" --verbose "${customOptions[@]}" "${signArgs[@]}"
+        
+        jpackage --type app-image --input "files" --dest "${{ env.OUTPUT }}" \
+        --main-jar app.jar --main-class org.test.TestApp --add-modules "${{ env.JDK_MODULES }}" -add-launcher "Launcher2=resources/sec-launcher.properties" \
         --name "${{ env.NAME }}" --app-version "${{ env.VERSION }}" --resource-dir "resources" --verbose "${customOptions[@]}" "${signArgs[@]}"
 
     - name: Build package with jpackage
