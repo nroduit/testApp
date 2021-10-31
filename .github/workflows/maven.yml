@@ -104,7 +104,7 @@ jobs:
         
         jpackage --type app-image --input "files" --dest "${{ env.OUTPUT }}" \
         --main-jar app.jar --main-class org.test.TestApp --add-modules "${{ env.JDK_MODULES }}" --add-launcher "Launcher2=resources/sec-launcher.properties" \
-        --name "${{ env.NAME }}" --app-version "${{ env.VERSION }}" --resource-dir "resources" --verbose "${customOptions[@]}" "${signArgs[@]}"
+        --name "${{ env.NAME }}" --app-version "${{ env.VERSION }}" --resource-dir "resources" --verbose "${customOptions[@]}" "${signArgs[@]}" || true
 
     - name: Build package with jpackage
       shell: bash
